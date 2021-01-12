@@ -61,10 +61,20 @@ namespace VtfHeaderParser
             }
         }
         
+        private void ParseReflectivity(BinaryReader vtfFile)
+        {
+            for (var i = 0; i < 3; i++)
+            {
+                _reflectivityVector[i] = vtfFile.ReadSingle();
+            }
+            
+            Console.WriteLine($"Reflectivity: {_reflectivityVector[0]} {_reflectivityVector[1]} {_reflectivityVector[2]}");
+        }
+        
         private void ParseDepthAndResources(BinaryReader vtfFile)
         {
             Console.WriteLine($"Thumbnail Format: {(ImageFormats) _lowResolutionImageFormat}");
-
+            
             _lowResolutionImageWidth = vtfFile.ReadByte();
             _lowResolutionImageHeight = vtfFile.ReadByte();
             Console.WriteLine($"Thumbnail Dimensions: {_lowResolutionImageWidth} X {_lowResolutionImageHeight}");
@@ -101,7 +111,7 @@ namespace VtfHeaderParser
         private void ParseHeader(string path)
         {
             using var vtfFile = new BinaryReader(File.Open(path,FileMode.Open));
-
+            
             Console.WriteLine($"Opening: {path}");
             
             const string headerSignature = "VTF\0";
@@ -112,7 +122,7 @@ namespace VtfHeaderParser
                 _versionMajor = vtfFile.ReadInt32();
                 _versionMinor = vtfFile.ReadInt32();
                 Console.WriteLine($"VTF Version {_versionMajor}.{_versionMinor}");
-
+                
                 _headerSize = vtfFile.ReadInt32();
                 Console.WriteLine($"Header Size: {_headerSize} Bytes");
                 
@@ -122,7 +132,7 @@ namespace VtfHeaderParser
                 
                 _flags = vtfFile.ReadUInt32();
                 PrintFlags();
-
+                
                 _amountOfFrames = vtfFile.ReadInt16();
                 Console.WriteLine($"Amount of Frames: {_amountOfFrames}");
                 
@@ -132,18 +142,14 @@ namespace VtfHeaderParser
                 // Skip padding of 4 bytes.
                 vtfFile.ReadBytes(4);
                 
-                for (var i = 0; i < 3; i++)
-                {
-                    _reflectivityVector[i] = vtfFile.ReadSingle();
-                }
-                Console.WriteLine($"Reflectivity: {_reflectivityVector[0]} {_reflectivityVector[1]} {_reflectivityVector[2]}");
+                ParseReflectivity(vtfFile);
                 
                 // Skip padding of 4 bytes.
                 vtfFile.ReadBytes(4);
                 
                 _bumpmapScale = vtfFile.ReadSingle();
                 Console.WriteLine($"Bumpmap Scale: {_bumpmapScale}");
-
+                
                 _highResolutionImageFormat = vtfFile.ReadInt32();
                 Console.WriteLine($"Texture Format: {(ImageFormats)_highResolutionImageFormat}");
                 
