@@ -36,10 +36,66 @@ namespace VtfHeaderParser
         
         private int     _textureDepth;
         private int     _numberOfResources;
-
+        
         public VtfHeader(string path)
         {
             ParseHeader(path);
+        }
+        
+        private void PrintFlags()
+        {
+            if (_flags != 0)
+            {
+                Console.WriteLine($"This VTF has the following flags: 0x{_flags:x8}");
+                foreach (uint currentFlag in Enum.GetValues(typeof(VtfFlags)))
+                {
+                    if ((currentFlag & _flags) != 0)
+                    {
+                        Console.WriteLine($"* {(VtfFlags)currentFlag,-30} (0x{currentFlag:x8})");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("No Flags found.");
+            }
+        }
+        
+        private void ParseDepthAndResources(BinaryReader vtfFile)
+        {
+            Console.WriteLine($"Thumbnail Format: {(ImageFormats) _lowResolutionImageFormat}");
+
+            _lowResolutionImageWidth = vtfFile.ReadByte();
+            _lowResolutionImageHeight = vtfFile.ReadByte();
+            Console.WriteLine($"Thumbnail Dimensions: {_lowResolutionImageWidth} X {_lowResolutionImageHeight}");
+            
+            // TODO: Can we parse resources if no thumbnail exists? How is the file layout changed?
+            
+            if (_versionMinor < 2) return;
+            
+            _textureDepth = vtfFile.ReadInt16();
+            Console.WriteLine($"Texture Depth: {_textureDepth}");
+            
+            if (_versionMinor < 3) return;
+            
+            // Skip 3 Bytes.
+            vtfFile.ReadBytes(3);
+            
+            _numberOfResources = vtfFile.ReadInt32();
+            Console.WriteLine($"Number of Resources: {_numberOfResources}");
+            
+            // Skip 8 Bytes.
+            vtfFile.ReadBytes(8);
+            
+            for (var i = 0; i < _numberOfResources; i++)
+            {
+                var resourceTag = vtfFile.ReadBytes(3);
+                
+                // Skip Resource flag, it is unused.
+                vtfFile.ReadByte();
+                
+                var resourceOffset = vtfFile.ReadInt32();
+            }
         }
         
         private void ParseHeader(string path)
@@ -65,21 +121,7 @@ namespace VtfHeaderParser
                 Console.WriteLine($"Texture Dimensions: {_largestMipmapWidth} X {_largestMipmapHeight}");
                 
                 _flags = vtfFile.ReadUInt32();
-                if (_flags > 0)
-                {
-                    Console.WriteLine($"This VTF has the following flags: 0x{_flags:x8}");
-                    foreach (uint currentFlag in Enum.GetValues(typeof(VtfFlags)))
-                    {
-                        if ((currentFlag & _flags) > 0)
-                        {
-                            Console.WriteLine($"* {(VtfFlags)currentFlag,-30} (0x{currentFlag:x8})");
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("No Flags found.");
-                }
+                PrintFlags();
 
                 _amountOfFrames = vtfFile.ReadInt16();
                 Console.WriteLine($"Amount of Frames: {_amountOfFrames}");
@@ -109,49 +151,7 @@ namespace VtfHeaderParser
                 Console.WriteLine($"Amount of Mipmaps: {_amountOfMipmaps}");
                 
                 _lowResolutionImageFormat = vtfFile.ReadUInt32();
-                // If there is no thumbnail, the format is 0xFFFFFFFF.
-                if (_lowResolutionImageFormat != 0xFFFFFFFF)
-                {
-                    Console.WriteLine($"Thumbnail Format: {(ImageFormats)_lowResolutionImageFormat}");
-                    
-                    _lowResolutionImageWidth = vtfFile.ReadByte();
-                    _lowResolutionImageHeight = vtfFile.ReadByte();
-                    Console.WriteLine($"Thumbnail Dimensions: {_lowResolutionImageWidth} X {_lowResolutionImageHeight}");
-                    
-                    // This logic is placed here as it appears to be broken if no thumbnail exists.
-                    // TODO: How to parse resources if no thumbnail exists? How is the file layout changed?
-                    if (_versionMinor >= 2)
-                    {
-                        _textureDepth = vtfFile.ReadInt16();
-                        Console.WriteLine($"Texture Depth: {_textureDepth}");
-
-                        if (_versionMinor >= 3)
-                        {
-                            // Skip 3 Bytes.
-                            vtfFile.ReadBytes(3);
-
-                            _numberOfResources = vtfFile.ReadInt32();
-                            Console.WriteLine($"Number of Resources: {_numberOfResources}");
-
-                            // Skip 8 Bytes.
-                            vtfFile.ReadBytes(8);
-
-                            for (var i = 0; i < _numberOfResources; i++)
-                            {
-                                var resourceTag = vtfFile.ReadBytes(3);
-
-                                // Skip Resource flag, it is unused.
-                                vtfFile.ReadByte();
-
-                                var resourceOffset = vtfFile.ReadInt32();
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("No thumbnail found.");
-                }
+                ParseDepthAndResources(vtfFile);
                 
                 Console.WriteLine("");
             }
