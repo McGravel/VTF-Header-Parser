@@ -86,13 +86,6 @@ namespace VtfHeaderParser
         
         private void ParseDepthAndResources(BinaryReader vtfFile)
         {
-            _lowResolutionImageFormat = vtfFile.ReadUInt32();
-            Console.WriteLine($"Thumbnail Format: {(ImageFormats)_lowResolutionImageFormat}");
-            
-            _lowResolutionImageWidth = vtfFile.ReadByte();
-            _lowResolutionImageHeight = vtfFile.ReadByte();
-            Console.WriteLine($"Thumbnail Dimensions: {_lowResolutionImageWidth} X {_lowResolutionImageHeight}");
-            
             if (_versionMinor < 2) return;
             
             _textureDepth = vtfFile.ReadInt16();
@@ -188,6 +181,13 @@ namespace VtfHeaderParser
                 
                 _amountOfMipmaps = vtfFile.ReadByte();
                 Console.WriteLine($"Amount of Mipmaps: {_amountOfMipmaps}");
+                
+                _lowResolutionImageFormat = vtfFile.ReadUInt32();
+                Console.WriteLine($"Thumbnail Format: {(ImageFormats)_lowResolutionImageFormat}");
+                
+                _lowResolutionImageWidth = vtfFile.ReadByte();
+                _lowResolutionImageHeight = vtfFile.ReadByte();
+                Console.WriteLine($"Thumbnail Dimensions: {_lowResolutionImageWidth} X {_lowResolutionImageHeight}");
                 
                 ParseDepthAndResources(vtfFile);
                 
