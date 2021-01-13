@@ -54,8 +54,9 @@ namespace VtfHeaderParser
             ParseHeader(path);
         }
         
-        private void PrintFlags()
+        private void ParseFlags(BinaryReader vtfFile)
         {
+            _flags = vtfFile.ReadUInt32();
             if (_flags != 0)
             {
                 Console.WriteLine($"This VTF has the following flags: 0x{_flags:x8}");
@@ -85,6 +86,7 @@ namespace VtfHeaderParser
         
         private void ParseDepthAndResources(BinaryReader vtfFile)
         {
+            _lowResolutionImageFormat = vtfFile.ReadUInt32();
             Console.WriteLine($"Thumbnail Format: {(ImageFormats)_lowResolutionImageFormat}");
             
             _lowResolutionImageWidth = vtfFile.ReadByte();
@@ -162,8 +164,7 @@ namespace VtfHeaderParser
                 _largestMipmapHeight = vtfFile.ReadInt16();
                 Console.WriteLine($"Texture Dimensions: {_largestMipmapWidth} X {_largestMipmapHeight}");
                 
-                _flags = vtfFile.ReadUInt32();
-                PrintFlags();
+                ParseFlags(vtfFile);
                 
                 _amountOfFrames = vtfFile.ReadInt16();
                 Console.WriteLine($"Amount of Frames: {_amountOfFrames}");
@@ -188,7 +189,6 @@ namespace VtfHeaderParser
                 _amountOfMipmaps = vtfFile.ReadByte();
                 Console.WriteLine($"Amount of Mipmaps: {_amountOfMipmaps}");
                 
-                _lowResolutionImageFormat = vtfFile.ReadUInt32();
                 ParseDepthAndResources(vtfFile);
                 
                 Console.WriteLine("");
