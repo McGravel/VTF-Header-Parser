@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -23,7 +24,7 @@ namespace VtfHeaderParser
         private short   _amountOfFrames;
         private short   _firstFrame;
         
-        private float[] _reflectivityVector = new float[3];
+        private readonly float[] _reflectivityVector = new float[3];
         
         private float   _bumpmapScale;
         private int     _highResolutionImageFormat;
@@ -36,6 +37,17 @@ namespace VtfHeaderParser
         
         private int     _textureDepth;
         private int     _numberOfResources;
+
+        private readonly List<KeyValuePair<string,string>> _resourceTags = new List<KeyValuePair<string,string>>()
+        {
+            new ("\x01\0\0", "Thumbnail"),
+            new ("\x30\0\0", "High Res Image"),
+            new ("\x10\0\0", "Animated Particle Sheet"),
+            new ("CRC", "CRC Data"),
+            new ("LOD", "Level of Detail"),
+            new ("TSO", "Extended Custom Flags"),
+            new ("KVD", "Arbitrary KeyValues")
+        };
         
         public VtfHeader(string path)
         {
@@ -73,13 +85,11 @@ namespace VtfHeaderParser
         
         private void ParseDepthAndResources(BinaryReader vtfFile)
         {
-            Console.WriteLine($"Thumbnail Format: {(ImageFormats) _lowResolutionImageFormat}");
+            Console.WriteLine($"Thumbnail Format: {(ImageFormats)_lowResolutionImageFormat}");
             
             _lowResolutionImageWidth = vtfFile.ReadByte();
             _lowResolutionImageHeight = vtfFile.ReadByte();
             Console.WriteLine($"Thumbnail Dimensions: {_lowResolutionImageWidth} X {_lowResolutionImageHeight}");
-            
-            // TODO: Can we parse resources if no thumbnail exists? How is the file layout changed?
             
             if (_versionMinor < 2) return;
             
@@ -99,11 +109,20 @@ namespace VtfHeaderParser
             
             for (var i = 0; i < _numberOfResources; i++)
             {
-                var resourceTag = vtfFile.ReadBytes(3);
-                
+                var resourceTag = Encoding.Default.GetString(vtfFile.ReadBytes(3));
+
+                foreach (var (key, value) in _resourceTags)
+                {
+                    if (resourceTag == key)
+                    {
+                        Console.WriteLine($"* {value}");
+                    }
+                }
+
                 // Skip Resource flag, it is unused.
                 vtfFile.ReadByte();
                 
+                // TODO: Store offset and parse the Tag's actual data later?
                 var resourceOffset = vtfFile.ReadInt32();
             }
         }
