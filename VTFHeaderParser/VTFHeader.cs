@@ -109,11 +109,11 @@ namespace VtfHeaderParser
             
             for (var i = 0; i < _numberOfResources; i++)
             {
-                var resourceTag = Encoding.Default.GetString(vtfFile.ReadBytes(3));
+                var inputTag = Encoding.Default.GetString(vtfFile.ReadBytes(3));
 
                 foreach (var (key, value) in _resourceTags)
                 {
-                    if (resourceTag == key)
+                    if (inputTag == key)
                     {
                         Console.WriteLine($"* {value}");
                     }
@@ -121,9 +121,19 @@ namespace VtfHeaderParser
 
                 // Skip Resource flag, it is unused.
                 vtfFile.ReadByte();
-                
-                // TODO: Store offset and parse the Tag's actual data later?
-                var resourceOffset = vtfFile.ReadInt32();
+
+                // Is this the place to print this information?
+                if (inputTag == "LOD")
+                {
+                    int lodU = vtfFile.ReadByte();
+                    int lodV = vtfFile.ReadByte();
+                    Console.WriteLine($"Level of Detail Tag:\n* Clamp U: {lodU}\n* Clamp V: {lodV}");
+                }
+                else
+                {
+                    // TODO: Store offset and parse the Tag's actual data later?
+                    var resourceOffset = vtfFile.ReadInt32();
+                }
             }
         }
         
