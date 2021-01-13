@@ -128,6 +128,9 @@ namespace VtfHeaderParser
                     int lodU = vtfFile.ReadByte();
                     int lodV = vtfFile.ReadByte();
                     Console.WriteLine($"Level of Detail Tag:\n* Clamp U: {lodU}\n* Clamp V: {lodV}");
+                    
+                    // Skip remainder bytes as the LOD values are in 2 bytes, not 4.
+                    vtfFile.ReadBytes(2);
                 }
                 else
                 {
