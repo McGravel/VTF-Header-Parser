@@ -10,33 +10,33 @@ namespace VtfHeaderParser
         // TODO: Determine which of these variables are used and should be kept.
         // This is otherwise somewhat wasteful to have many variables only used in printing text.
         // For example, the major version is only used in printing, so is this variable necessary?
-        private int     _versionMajor;
+        private int   _versionMajor;
         // Whereas the minor version is used to parse further into the header, as later versions have more to parse.
-        private int     _versionMinor;
+        private int   _versionMinor;
         
-        private int     _headerSize;
+        private int   _headerSize;
         
-        private short   _largestMipmapWidth;
-        private short   _largestMipmapHeight;
+        private short _largestMipmapWidth;
+        private short _largestMipmapHeight;
         
-        private uint    _flags;
+        private uint  _flags;
         
-        private short   _amountOfFrames;
-        private short   _firstFrame;
+        private short _amountOfFrames;
+        private short _firstFrame;
         
         private readonly float[] _reflectivityVector = new float[3];
         
-        private float   _bumpmapScale;
-        private int     _highResolutionImageFormat;
-        private int     _amountOfMipmaps;
+        private float _bumpmapScale;
+        private int   _highResolutionImageFormat;
+        private int   _amountOfMipmaps;
         
         // This var is unsigned to allow comparison against 0xFFFFFFFF to check a thumbnail exists.
-        private uint    _lowResolutionImageFormat;
-        private short   _lowResolutionImageWidth;
-        private short   _lowResolutionImageHeight;
+        private uint  _lowResolutionImageFormat;
+        private short _lowResolutionImageWidth;
+        private short _lowResolutionImageHeight;
         
-        private int     _textureDepth;
-        private int     _numberOfResources;
+        private int   _textureDepth;
+        private int   _numberOfResources;
 
         private readonly List<KeyValuePair<string,string>> _resourceTags = new List<KeyValuePair<string,string>>()
         {
@@ -64,7 +64,7 @@ namespace VtfHeaderParser
                 {
                     if ((currentFlag & _flags) != 0)
                     {
-                        Console.WriteLine($"* {(VtfFlags)currentFlag,-30} (0x{currentFlag:x8})");
+                        Console.WriteLine($"- {(VtfFlags)currentFlag,-30} (0x{currentFlag:x8})");
                     }
                 }
             }
@@ -110,7 +110,7 @@ namespace VtfHeaderParser
                 {
                     if (inputTag == key)
                     {
-                        Console.WriteLine($"* {value}");
+                        Console.WriteLine($"- {value}");
                     }
                 }
 
@@ -122,15 +122,32 @@ namespace VtfHeaderParser
                 {
                     int lodU = vtfFile.ReadByte();
                     int lodV = vtfFile.ReadByte();
-                    Console.WriteLine($"Level of Detail Tag:\n* Clamp U: {lodU}\n* Clamp V: {lodV}");
+                    Console.WriteLine($"-- Clamp U: {lodU}\n-- Clamp V: {lodV}");
                     
                     // Skip remainder bytes as the LOD values are in 2 bytes, not 4.
                     vtfFile.ReadBytes(2);
                 }
-                else
+                else if (inputTag == "KVD")
                 {
                     // TODO: Store offset and parse the Tag's actual data later?
                     var resourceOffset = vtfFile.ReadInt32();
+                    
+                    // Move ahead in the file by the offset given minus the header size, and nudged forward by 4 bytes.
+                    vtfFile.ReadBytes((resourceOffset - _headerSize) + 4);
+
+                    string keyValues = null;
+                    while (vtfFile.BaseStream.Position != vtfFile.BaseStream.Length)
+                    {
+                        // 64 Bytes is arbitrary number, better suggestion?
+                        keyValues += Encoding.Default.GetString(vtfFile.ReadBytes(64));
+                    }
+
+                    Console.Write(keyValues);
+                }
+                else
+                {
+                    // Nothing to be used, skip the 4 bytes.
+                    vtfFile.ReadBytes(4);
                 }
             }
         }
