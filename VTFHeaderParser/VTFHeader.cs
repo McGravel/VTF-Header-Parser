@@ -84,6 +84,36 @@ namespace VtfHeaderParser
             Console.WriteLine($"Reflectivity: {_reflectivityVector[0]} {_reflectivityVector[1]} {_reflectivityVector[2]}");
         }
         
+        private static void ParseKeyValues(string keyValues)
+        {
+            // BUG: This will break with any KV entry using quotation marks.
+            // TODO: Can KVs even have quotation marks?
+            string[] keyValueSplitChars = {"\n", "\t", "\r", "\"", " ", "{", "}"};
+            var splitKeyValues = keyValues.Split(keyValueSplitChars, StringSplitOptions.RemoveEmptyEntries);
+            var parsingKey = true;
+            var skipFirst = true;
+            
+            // The skipFirst bool skips the "Information" entry which is not a KeyValue.
+            foreach (var entry in splitKeyValues)
+            {
+                if (!skipFirst)
+                {
+                    if (parsingKey)
+                    {
+                        Console.Write($"-- {entry}: ");
+                        parsingKey = false;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{entry}");
+                        parsingKey = true;
+                    }
+                }
+
+                skipFirst = false;
+            }
+        }
+        
         private void ParseDepthAndResources(BinaryReader vtfFile)
         {
             if (_versionMinor < 2) return;
@@ -142,7 +172,9 @@ namespace VtfHeaderParser
                         keyValues += Encoding.Default.GetString(vtfFile.ReadBytes(64));
                     }
 
-                    Console.Write(keyValues);
+                    //Console.Write(keyValues);
+                    
+                    ParseKeyValues(keyValues);
                 }
                 else
                 {
@@ -151,7 +183,7 @@ namespace VtfHeaderParser
                 }
             }
         }
-        
+
         private void ParseHeader(string path)
         {
             using var vtfFile = new BinaryReader(File.Open(path,FileMode.Open));
