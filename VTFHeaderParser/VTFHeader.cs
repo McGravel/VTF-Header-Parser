@@ -38,7 +38,7 @@ namespace VtfHeaderParser
         private int   _textureDepth;
         private int   _numberOfResources;
 
-        private readonly List<KeyValuePair<string,string>> _resourceTags = new List<KeyValuePair<string,string>>()
+        private readonly List<KeyValuePair<string, string>> _resourceTags = new List<KeyValuePair<string,string>>()
         {
             new ("\x01\0\0", "Thumbnail"),
             new ("\x30\0\0", "High Res Image"),
@@ -48,6 +48,8 @@ namespace VtfHeaderParser
             new ("TSO", "Extended Custom Flags"),
             new ("KVD", "Arbitrary KeyValues")
         };
+
+        private List<KeyValuePair<string, string>> _keyValuePairs = new List<KeyValuePair<string, string>>() { };
         
         public VtfHeader(string path)
         {
@@ -84,29 +86,44 @@ namespace VtfHeaderParser
             Console.WriteLine($"Reflectivity: {_reflectivityVector[0]} {_reflectivityVector[1]} {_reflectivityVector[2]}");
         }
         
-        private static void ParseKeyValues(string keyValues)
+        private void ParseKeyValues(string keyValues)
         {
-            // BUG: This will break with any KV entry using quotation marks.
             // TODO: Can KVs even have quotation marks?
             string[] keyValueSplitChars = {"\n", "\t", "\r", "\"", " ", "{", "}"};
             var splitKeyValues = keyValues.Split(keyValueSplitChars, StringSplitOptions.RemoveEmptyEntries);
+            
             var parsingKey = true;
             var skipFirst = true;
             
-            // The skipFirst bool skips the "Information" entry which is not a KeyValue.
-            foreach (var entry in splitKeyValues)
+            var entryRepeat = 0;
+
+            string entryKey = null;
+            string entryValue = null;
+            
+            foreach (var currentEntry in splitKeyValues)
             {
+                // The skipFirst bool skips the "Information" entry which is not a KeyValue.
                 if (!skipFirst)
                 {
                     if (parsingKey)
                     {
-                        Console.Write($"-- {entry}: ");
+                        Console.Write($"-- {currentEntry}: ");
+                        entryKey = currentEntry;
                         parsingKey = false;
+                        entryRepeat++;
                     }
                     else
                     {
-                        Console.WriteLine($"{entry}");
+                        Console.WriteLine($"{currentEntry}");
+                        entryValue = currentEntry;
                         parsingKey = true;
+                        entryRepeat++;
+                    }
+
+                    if (entryRepeat == 2)
+                    {
+                        _keyValuePairs.Add(new KeyValuePair<string, string>(entryKey, entryValue));
+                        entryRepeat = 0;
                     }
                 }
 
@@ -171,8 +188,6 @@ namespace VtfHeaderParser
                         // 64 Bytes is arbitrary number, better suggestion?
                         keyValues += Encoding.Default.GetString(vtfFile.ReadBytes(64));
                     }
-
-                    //Console.Write(keyValues);
                     
                     ParseKeyValues(keyValues);
                 }
