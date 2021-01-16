@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace VtfHeaderParser
@@ -91,10 +92,9 @@ namespace VtfHeaderParser
             // TODO: Can KVs even have quotation marks?
             string[] keyValueSplitChars = {"\n", "\t", "\r", "\"", " ", "{", "}"};
             var splitKeyValues = keyValues.Split(keyValueSplitChars, StringSplitOptions.RemoveEmptyEntries);
+            splitKeyValues = splitKeyValues.Skip(1).ToArray();
             
             var parsingKey = true;
-            var skipFirst = true;
-            
             var entryRepeat = 0;
 
             string entryKey = null;
@@ -102,32 +102,26 @@ namespace VtfHeaderParser
             
             foreach (var currentEntry in splitKeyValues)
             {
-                // The skipFirst bool skips the "Information" entry which is not a KeyValue.
-                if (!skipFirst)
+                if (parsingKey)
                 {
-                    if (parsingKey)
-                    {
-                        Console.Write($"-- {currentEntry}: ");
-                        entryKey = currentEntry;
-                        parsingKey = false;
-                        entryRepeat++;
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{currentEntry}");
-                        entryValue = currentEntry;
-                        parsingKey = true;
-                        entryRepeat++;
-                    }
-
-                    if (entryRepeat == 2)
-                    {
-                        _keyValuePairs.Add(new KeyValuePair<string, string>(entryKey, entryValue));
-                        entryRepeat = 0;
-                    }
+                    Console.Write($"-- {currentEntry}: ");
+                    entryKey = currentEntry;
+                    parsingKey = false;
+                    entryRepeat++;
+                }
+                else
+                {
+                    Console.WriteLine($"{currentEntry}");
+                    entryValue = currentEntry;
+                    parsingKey = true;
+                    entryRepeat++;
                 }
 
-                skipFirst = false;
+                if (entryRepeat == 2)
+                {
+                    _keyValuePairs.Add(new KeyValuePair<string, string>(entryKey, entryValue));
+                    entryRepeat = 0;
+                }
             }
         }
         
