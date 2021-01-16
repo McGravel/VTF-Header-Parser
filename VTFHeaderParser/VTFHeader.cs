@@ -8,12 +8,7 @@ namespace VtfHeaderParser
 {
     public class VtfHeader
     {
-        // TODO: Determine which of these variables are used and should be kept.
-        // This is otherwise somewhat wasteful to have many variables only used in printing text.
-        // For example, the major version is only used in printing, so is this variable necessary?
         private int   _versionMajor;
-        
-        // Whereas the minor version is used to parse further into the header, as later versions have more to parse.
         private int   _versionMinor;
         
         private int   _headerSize;
@@ -21,7 +16,7 @@ namespace VtfHeaderParser
         private short _largestMipmapWidth;
         private short _largestMipmapHeight;
         
-        private uint  _flags;
+        private uint  _rawFlags;
         
         private short _amountOfFrames;
         private short _firstFrame;
@@ -51,8 +46,9 @@ namespace VtfHeaderParser
             new ("KVD", "Arbitrary KeyValues")
         };
 
-        private List<KeyValuePair<string, string>> _keyValuePairs = new List<KeyValuePair<string, string>>() { };
-        private List<string> _tags = new List<string>() { };
+        private List<KeyValuePair<string, string>> _keyValuePairs = new();
+        private List<string> _tags = new();
+        private List<string> _flags = new();
         
         public VtfHeader(string path)
         {
@@ -61,15 +57,18 @@ namespace VtfHeaderParser
         
         private void ParseFlags(BinaryReader vtfFile)
         {
-            _flags = vtfFile.ReadUInt32();
-            if (_flags != 0)
+            _rawFlags = vtfFile.ReadUInt32();
+            if (_rawFlags != 0)
             {
-                Console.WriteLine($"This VTF has the following flags: 0x{_flags:x8}");
+                Console.WriteLine($"This VTF has the following flags: 0x{_rawFlags:x8}");
                 foreach (uint currentFlag in Enum.GetValues(typeof(VtfFlags)))
                 {
-                    if ((currentFlag & _flags) != 0)
+                    if ((currentFlag & _rawFlags) != 0)
                     {
                         Console.WriteLine($"- {(VtfFlags)currentFlag,-30} (0x{currentFlag:x8})");
+                        
+                        var castFlag = (VtfFlags)currentFlag;
+                        _flags.Add(castFlag.ToString());
                     }
                 }
             }
@@ -175,7 +174,6 @@ namespace VtfHeaderParser
                 }
                 else if (inputTag == "KVD")
                 {
-                    // TODO: Store offset and parse the Tag's actual data later?
                     var resourceOffset = vtfFile.ReadInt32();
                     
                     // Move ahead in the file by the offset given minus the header size, and nudged forward by 4 bytes.
