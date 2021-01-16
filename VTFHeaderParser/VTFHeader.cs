@@ -12,6 +12,7 @@ namespace VtfHeaderParser
         // This is otherwise somewhat wasteful to have many variables only used in printing text.
         // For example, the major version is only used in printing, so is this variable necessary?
         private int   _versionMajor;
+        
         // Whereas the minor version is used to parse further into the header, as later versions have more to parse.
         private int   _versionMinor;
         
@@ -51,6 +52,7 @@ namespace VtfHeaderParser
         };
 
         private List<KeyValuePair<string, string>> _keyValuePairs = new List<KeyValuePair<string, string>>() { };
+        private List<string> _tags = new List<string>() { };
         
         public VtfHeader(string path)
         {
@@ -92,6 +94,8 @@ namespace VtfHeaderParser
             // TODO: Can KVs even have quotation marks?
             string[] keyValueSplitChars = {"\n", "\t", "\r", "\"", " ", "{", "}"};
             var splitKeyValues = keyValues.Split(keyValueSplitChars, StringSplitOptions.RemoveEmptyEntries);
+            
+            // Remove the "Information" part from the array as it's not a KeyValue.
             splitKeyValues = splitKeyValues.Skip(1).ToArray();
             
             var parsingKey = true;
@@ -152,6 +156,7 @@ namespace VtfHeaderParser
                     if (inputTag == key)
                     {
                         Console.WriteLine($"- {value}");
+                        _tags.Add(value);
                     }
                 }
 
