@@ -70,13 +70,13 @@ namespace VtfHeaderParser
                 Console.WriteLine($"This VTF has the following flags: 0x{_rawFlags:x8}");
                 foreach (uint currentFlag in Enum.GetValues(typeof(VtfFlags)))
                 {
-                    if ((currentFlag & _rawFlags) != 0)
-                    {
-                        Console.WriteLine($"- {(VtfFlags)currentFlag,-30} (0x{currentFlag:x8})");
-                        
-                        var castFlag = (VtfFlags)currentFlag;
-                        _flags.Add(castFlag.ToString());
-                    }
+                    if ((currentFlag & _rawFlags) == 0) continue;
+                    
+                    Console.WriteLine($"- {(VtfFlags)currentFlag,-30} (0x{currentFlag:x8})");
+                    
+                    // Couldn't figure out how to do this in one line.
+                    var castFlag = (VtfFlags)currentFlag;
+                    _flags.Add(castFlag.ToString());
                 }
             }
             else
@@ -159,11 +159,10 @@ namespace VtfHeaderParser
 
                 foreach (var (key, value) in _resourceTags)
                 {
-                    if (inputTag == key)
-                    {
-                        Console.WriteLine($"- {value}");
-                        _tags.Add(value);
-                    }
+                    if (inputTag != key) continue;
+                    
+                    Console.WriteLine($"- {value}");
+                    _tags.Add(value);
                 }
 
                 // Skip Resource flag, it is unused.
