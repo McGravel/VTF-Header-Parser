@@ -22,8 +22,8 @@ namespace VtfHeaderParser
         public short AmountOfFrames { get; private set; }
         public short FirstFrame { get; private set; }
 
-        private readonly float[] _reflectivityVector = new float[3];
-        public ReadOnlyCollection<float> ReflectivityVector => Array.AsReadOnly(_reflectivityVector);
+        private readonly float[] _reflectivity = new float[3];
+        public ReadOnlyCollection<float> Reflectivity => Array.AsReadOnly(_reflectivity);
 
         public float BumpmapScale { get; private set; }
         public int HighResolutionImageFormat { get; private set; }
@@ -89,10 +89,10 @@ namespace VtfHeaderParser
         {
             for (var i = 0; i < 3; i++)
             {
-                _reflectivityVector[i] = vtfFile.ReadSingle();
+                _reflectivity[i] = vtfFile.ReadSingle();
             }
             
-            Console.WriteLine($"Reflectivity: {_reflectivityVector[0]} {_reflectivityVector[1]} {_reflectivityVector[2]}");
+            Console.WriteLine($"Reflectivity: {_reflectivity[0]} {_reflectivity[1]} {_reflectivity[2]}");
         }
         
         private void ParseKeyValues(string keyValues)
