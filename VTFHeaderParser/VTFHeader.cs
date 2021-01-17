@@ -46,9 +46,14 @@ namespace VtfHeaderParser
             new ("KVD", "Arbitrary KeyValues")
         };
 
-        public List<KeyValuePair<string, string>> KeyValuePairs { get; } = new();
-        public List<string> Tags { get; } = new();
-        public List<string> Flags { get; } = new();
+        private readonly List<KeyValuePair<string, string>> _keyValuePairs = new();
+        public IEnumerable<KeyValuePair<string, string>> KeyValuePairs => _keyValuePairs.AsEnumerable();
+        
+        private readonly List<string> _tags = new();
+        public IEnumerable<string> Tags => _tags.AsEnumerable();
+        
+        private readonly List<string> _flags = new();
+        public IEnumerable<string> Flags => _flags.AsEnumerable();
 
         public VtfHeader(string path)
         {
@@ -68,7 +73,7 @@ namespace VtfHeaderParser
                         Console.WriteLine($"- {(VtfFlags)currentFlag,-30} (0x{currentFlag:x8})");
                         
                         var castFlag = (VtfFlags)currentFlag;
-                        Flags.Add(castFlag.ToString());
+                        _flags.Add(castFlag.ToString());
                     }
                 }
             }
@@ -122,7 +127,7 @@ namespace VtfHeaderParser
 
                 if (entryRepeat == 2)
                 {
-                    KeyValuePairs.Add(new KeyValuePair<string, string>(entryKey, entryValue));
+                    _keyValuePairs.Add(new KeyValuePair<string, string>(entryKey, entryValue));
                     entryRepeat = 0;
                 }
             }
@@ -155,7 +160,7 @@ namespace VtfHeaderParser
                     if (inputTag == key)
                     {
                         Console.WriteLine($"- {value}");
-                        Tags.Add(value);
+                        _tags.Add(value);
                     }
                 }
 
