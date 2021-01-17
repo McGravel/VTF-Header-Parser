@@ -8,31 +8,31 @@ namespace VtfHeaderParser
 {
     public class VtfHeader
     {
-        private int   _versionMajor;
-        private int   _versionMinor;
-        
+        public int VersionMajor { get; private set; }
+        public int VersionMinor { get; private set; }
+
         private int   _headerSize;
-        
-        private short _largestMipmapWidth;
-        private short _largestMipmapHeight;
-        
+
+        public short LargestMipmapWidth { get; private set; }
+        public short LargestMipmapHeight { get; private set; }
+
         private uint  _rawFlags;
-        
-        private short _amountOfFrames;
-        private short _firstFrame;
-        
-        private readonly float[] _reflectivityVector = new float[3];
-        
-        private float _bumpmapScale;
-        private int   _highResolutionImageFormat;
-        private int   _amountOfMipmaps;
-        
+
+        public short AmountOfFrames { get; private set; }
+        public short FirstFrame { get; private set; }
+
+        public float[] ReflectivityVector { get; } = new float[3];
+
+        public float BumpmapScale { get; private set; }
+        public int HighResolutionImageFormat { get; private set; }
+        public int AmountOfMipmaps { get; private set; }
+
         // This var is unsigned to allow comparison against 0xFFFFFFFF to check a thumbnail exists.
-        private uint  _lowResolutionImageFormat;
-        private short _lowResolutionImageWidth;
-        private short _lowResolutionImageHeight;
-        
-        private int   _textureDepth;
+        public uint LowResolutionImageFormat { get; private set; }
+        public short LowResolutionImageWidth { get; private set; }
+        public short LowResolutionImageHeight { get; private set; }
+
+        public int TextureDepth { get; private set; }
         private int   _numberOfResources;
 
         private readonly List<KeyValuePair<string, string>> _resourceTags = new List<KeyValuePair<string,string>>()
@@ -46,10 +46,10 @@ namespace VtfHeaderParser
             new ("KVD", "Arbitrary KeyValues")
         };
 
-        private List<KeyValuePair<string, string>> _keyValuePairs = new();
-        private List<string> _tags = new();
-        private List<string> _flags = new();
-        
+        public List<KeyValuePair<string, string>> KeyValuePairs { get; } = new();
+        public List<string> Tags { get; } = new();
+        public List<string> Flags { get; } = new();
+
         public VtfHeader(string path)
         {
             ParseHeader(path);
@@ -68,7 +68,7 @@ namespace VtfHeaderParser
                         Console.WriteLine($"- {(VtfFlags)currentFlag,-30} (0x{currentFlag:x8})");
                         
                         var castFlag = (VtfFlags)currentFlag;
-                        _flags.Add(castFlag.ToString());
+                        Flags.Add(castFlag.ToString());
                     }
                 }
             }
@@ -82,10 +82,10 @@ namespace VtfHeaderParser
         {
             for (var i = 0; i < 3; i++)
             {
-                _reflectivityVector[i] = vtfFile.ReadSingle();
+                ReflectivityVector[i] = vtfFile.ReadSingle();
             }
             
-            Console.WriteLine($"Reflectivity: {_reflectivityVector[0]} {_reflectivityVector[1]} {_reflectivityVector[2]}");
+            Console.WriteLine($"Reflectivity: {ReflectivityVector[0]} {ReflectivityVector[1]} {ReflectivityVector[2]}");
         }
         
         private void ParseKeyValues(string keyValues)
@@ -122,7 +122,7 @@ namespace VtfHeaderParser
 
                 if (entryRepeat == 2)
                 {
-                    _keyValuePairs.Add(new KeyValuePair<string, string>(entryKey, entryValue));
+                    KeyValuePairs.Add(new KeyValuePair<string, string>(entryKey, entryValue));
                     entryRepeat = 0;
                 }
             }
@@ -130,12 +130,12 @@ namespace VtfHeaderParser
         
         private void ParseDepthAndResources(BinaryReader vtfFile)
         {
-            if (_versionMinor < 2) return;
+            if (VersionMinor < 2) return;
             
-            _textureDepth = vtfFile.ReadInt16();
-            Console.WriteLine($"Texture Depth: {_textureDepth}");
+            TextureDepth = vtfFile.ReadInt16();
+            Console.WriteLine($"Texture Depth: {TextureDepth}");
             
-            if (_versionMinor < 3) return;
+            if (VersionMinor < 3) return;
             
             // Skip 3 Bytes.
             vtfFile.ReadBytes(3);
@@ -155,7 +155,7 @@ namespace VtfHeaderParser
                     if (inputTag == key)
                     {
                         Console.WriteLine($"- {value}");
-                        _tags.Add(value);
+                        Tags.Add(value);
                     }
                 }
 
@@ -207,24 +207,24 @@ namespace VtfHeaderParser
             
             if (inputSignature == headerSignature)
             {
-                _versionMajor = vtfFile.ReadInt32();
-                _versionMinor = vtfFile.ReadInt32();
-                Console.WriteLine($"VTF Version {_versionMajor}.{_versionMinor}");
+                VersionMajor = vtfFile.ReadInt32();
+                VersionMinor = vtfFile.ReadInt32();
+                Console.WriteLine($"VTF Version {VersionMajor}.{VersionMinor}");
                 
                 _headerSize = vtfFile.ReadInt32();
                 Console.WriteLine($"Header Size: {_headerSize} Bytes");
                 
-                _largestMipmapWidth = vtfFile.ReadInt16();
-                _largestMipmapHeight = vtfFile.ReadInt16();
-                Console.WriteLine($"Texture Dimensions: {_largestMipmapWidth} X {_largestMipmapHeight}");
+                LargestMipmapWidth = vtfFile.ReadInt16();
+                LargestMipmapHeight = vtfFile.ReadInt16();
+                Console.WriteLine($"Texture Dimensions: {LargestMipmapWidth} X {LargestMipmapHeight}");
                 
                 ParseFlags(vtfFile);
                 
-                _amountOfFrames = vtfFile.ReadInt16();
-                Console.WriteLine($"Amount of Frames: {_amountOfFrames}");
+                AmountOfFrames = vtfFile.ReadInt16();
+                Console.WriteLine($"Amount of Frames: {AmountOfFrames}");
                 
-                _firstFrame = vtfFile.ReadInt16();
-                Console.WriteLine($"First Frame: {_firstFrame}");
+                FirstFrame = vtfFile.ReadInt16();
+                Console.WriteLine($"First Frame: {FirstFrame}");
                 
                 // Skip padding of 4 bytes.
                 vtfFile.ReadBytes(4);
@@ -234,21 +234,21 @@ namespace VtfHeaderParser
                 // Skip padding of 4 bytes.
                 vtfFile.ReadBytes(4);
                 
-                _bumpmapScale = vtfFile.ReadSingle();
-                Console.WriteLine($"Bumpmap Scale: {_bumpmapScale}");
+                BumpmapScale = vtfFile.ReadSingle();
+                Console.WriteLine($"Bumpmap Scale: {BumpmapScale}");
                 
-                _highResolutionImageFormat = vtfFile.ReadInt32();
-                Console.WriteLine($"Texture Format: {(ImageFormats)_highResolutionImageFormat}");
+                HighResolutionImageFormat = vtfFile.ReadInt32();
+                Console.WriteLine($"Texture Format: {(ImageFormats)HighResolutionImageFormat}");
                 
-                _amountOfMipmaps = vtfFile.ReadByte();
-                Console.WriteLine($"Amount of Mipmaps: {_amountOfMipmaps}");
+                AmountOfMipmaps = vtfFile.ReadByte();
+                Console.WriteLine($"Amount of Mipmaps: {AmountOfMipmaps}");
                 
-                _lowResolutionImageFormat = vtfFile.ReadUInt32();
-                Console.WriteLine($"Thumbnail Format: {(ImageFormats)_lowResolutionImageFormat}");
+                LowResolutionImageFormat = vtfFile.ReadUInt32();
+                Console.WriteLine($"Thumbnail Format: {(ImageFormats)LowResolutionImageFormat}");
                 
-                _lowResolutionImageWidth = vtfFile.ReadByte();
-                _lowResolutionImageHeight = vtfFile.ReadByte();
-                Console.WriteLine($"Thumbnail Dimensions: {_lowResolutionImageWidth} X {_lowResolutionImageHeight}");
+                LowResolutionImageWidth = vtfFile.ReadByte();
+                LowResolutionImageHeight = vtfFile.ReadByte();
+                Console.WriteLine($"Thumbnail Dimensions: {LowResolutionImageWidth} X {LowResolutionImageHeight}");
                 
                 ParseDepthAndResources(vtfFile);
                 
