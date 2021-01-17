@@ -11,20 +11,10 @@ namespace VtfHeaderParser
     {
         public int VersionMajor { get; private set; }
         public int VersionMinor { get; private set; }
-
-        private int   _headerSize;
-
         public short LargestMipmapWidth { get; private set; }
         public short LargestMipmapHeight { get; private set; }
-
-        private uint  _rawFlags;
-
         public short AmountOfFrames { get; private set; }
         public short FirstFrame { get; private set; }
-
-        private readonly float[] _reflectivity = new float[3];
-        public ReadOnlyCollection<float> Reflectivity => Array.AsReadOnly(_reflectivity);
-
         public float BumpmapScale { get; private set; }
         public int HighResolutionImageFormat { get; private set; }
         public int AmountOfMipmaps { get; private set; }
@@ -33,9 +23,12 @@ namespace VtfHeaderParser
         public uint LowResolutionImageFormat { get; private set; }
         public short LowResolutionImageWidth { get; private set; }
         public short LowResolutionImageHeight { get; private set; }
-
         public int TextureDepth { get; private set; }
-        private int   _numberOfResources;
+        
+        // These vars are kept internal because there doesn't appear to be any need for these externally.
+        private int _headerSize;
+        private uint _rawFlags;
+        private int _numberOfResources;
 
         private readonly List<KeyValuePair<string, string>> _resourceTags = new List<KeyValuePair<string,string>>()
         {
@@ -48,6 +41,9 @@ namespace VtfHeaderParser
             new ("KVD", "Arbitrary KeyValues")
         };
 
+        private readonly float[] _reflectivity = new float[3];
+        public ReadOnlyCollection<float> Reflectivity => Array.AsReadOnly(_reflectivity);
+        
         private readonly List<KeyValuePair<string, string>> _keyValuePairs = new();
         public IEnumerable<KeyValuePair<string, string>> KeyValuePairs => _keyValuePairs.AsEnumerable();
         
