@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,8 @@ namespace VtfHeaderParser
         public short AmountOfFrames { get; private set; }
         public short FirstFrame { get; private set; }
 
-        public float[] ReflectivityVector { get; } = new float[3];
+        private readonly float[] _reflectivityVector = new float[3];
+        public ReadOnlyCollection<float> ReflectivityVector => Array.AsReadOnly(_reflectivityVector);
 
         public float BumpmapScale { get; private set; }
         public int HighResolutionImageFormat { get; private set; }
@@ -87,10 +89,10 @@ namespace VtfHeaderParser
         {
             for (var i = 0; i < 3; i++)
             {
-                ReflectivityVector[i] = vtfFile.ReadSingle();
+                _reflectivityVector[i] = vtfFile.ReadSingle();
             }
             
-            Console.WriteLine($"Reflectivity: {ReflectivityVector[0]} {ReflectivityVector[1]} {ReflectivityVector[2]}");
+            Console.WriteLine($"Reflectivity: {_reflectivityVector[0]} {_reflectivityVector[1]} {_reflectivityVector[2]}");
         }
         
         private void ParseKeyValues(string keyValues)
