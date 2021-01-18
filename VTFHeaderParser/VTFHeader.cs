@@ -110,7 +110,7 @@ namespace VtfHeaderParser
             {
                 if (parsingKey)
                 {
-                    Console.Write($"-- {currentEntry}: ");
+                    Console.Write($"  - {currentEntry}: ");
                     entryKey = currentEntry;
                     parsingKey = false;
                     entryRepeat++;
@@ -169,7 +169,7 @@ namespace VtfHeaderParser
                 {
                     var lodU = vtfFile.ReadByte();
                     var lodV = vtfFile.ReadByte();
-                    Console.WriteLine($"-- Clamp U: {lodU}\n-- Clamp V: {lodV}");
+                    Console.WriteLine($"  - Clamp U: {lodU}\n  - Clamp V: {lodV}");
                     
                     // Skip remainder bytes as the LOD values are in 2 bytes, not 4.
                     vtfFile.ReadBytes(2);
