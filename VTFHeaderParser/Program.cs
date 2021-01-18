@@ -17,7 +17,7 @@ namespace VtfHeaderParser
             {
                 try
                 {
-                    var vtfFile = new VtfHeader(fileName);
+                    var vtfFile = new VtfFile(fileName);
                 }
                 catch (FileNotFoundException e)
                 {
