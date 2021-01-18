@@ -1,0 +1,20 @@
+
+*.xml
+/.gitignore
+/VTFHeaderParser/obj*
+/VTFHeaderParser/bin*
+/.idea/.idea.VTFHeaderParser/.idea/riderModule.iml
+# Default ignored files
+/shelf/
+/workspace.xml
+# Rider ignored files
+/modules.xml
+/projectSettingsUpdater.xml
+/.idea.VTFHeaderParser.iml
+/contentModel.xml
+# Datasource local storage ignored files
+.idea\.idea.VTFHeaderParser\.idea/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+.idea/
