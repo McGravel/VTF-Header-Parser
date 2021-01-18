@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace VtfHeaderParser
 {
@@ -14,7 +15,18 @@ namespace VtfHeaderParser
             // TODO: Should each file be stored in its own unique variable? Perhaps a list.
             foreach (var fileName in args)
             {
-                var vtfFile = new VtfHeader(fileName);
+                try
+                {
+                    var vtfFile = new VtfHeader(fileName);
+                }
+                catch (FileNotFoundException e)
+                {
+                    Console.WriteLine($"The file was not found:\n{e.FileName}\n");
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    Console.WriteLine("The file is not a valid VTF file.\n");
+                }
             }
         }
     }
