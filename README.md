@@ -4,4 +4,4 @@ Use in command-line or drag-and-drop VTFs.
 
 ### Example output:  
 
-![](https://i.imgur.com/PFvOoPt.png)
+![](https://i.imgur.com/AQ6wx2o.png)
