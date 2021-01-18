@@ -167,8 +167,8 @@ namespace VtfHeaderParser
                 // Is this the place to print this information?
                 if (inputTag == "LOD")
                 {
-                    int lodU = vtfFile.ReadByte();
-                    int lodV = vtfFile.ReadByte();
+                    var lodU = vtfFile.ReadByte();
+                    var lodV = vtfFile.ReadByte();
                     Console.WriteLine($"-- Clamp U: {lodU}\n-- Clamp V: {lodV}");
                     
                     // Skip remainder bytes as the LOD values are in 2 bytes, not 4.
@@ -260,6 +260,40 @@ namespace VtfHeaderParser
             {
                 throw new ArgumentOutOfRangeException(path, "File is not a valid VTF, File Signature did not match");
             }
+        }
+        
+        /// <summary>
+        /// Returns if the VTF is a compressed (DXT) Format.
+        /// </summary>
+        public bool IsCompressedFormat()
+        {
+            // Entries 13 to 15 in the ImageFormat enum are DXT, the rest aren't compressed.
+            return (HighResolutionImageFormat > 12 && HighResolutionImageFormat < 16);
+        }
+        
+        public bool IsAnimated()
+        {
+            return AmountOfFrames > 1;
+        }
+        
+        public bool HasMipmaps()
+        {
+            return AmountOfMipmaps != 0;
+        }
+        
+        public bool HasThumbnail()
+        {
+            return (ImageFormats)LowResolutionImageFormat != ImageFormats.IMAGE_FORMAT_NONE;
+        }
+        
+        public bool HasFlags()
+        {
+            return _rawFlags != 0;
+        }
+        
+        public bool HasKeyValues()
+        {
+            return KeyValuePairs.Any();
         }
     }
 }
