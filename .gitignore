@@ -18,3 +18,7 @@
 # Editor-based HTTP Client requests
 /httpRequests/
 .idea/
+/.vs/VTFHeaderParser
+/VTFHeaderParser/Properties
+/VTFHeaderParserLib/bin/Debug/net5.0
+/VTFHeaderParserLib/obj

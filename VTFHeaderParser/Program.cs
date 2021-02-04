@@ -1,33 +1,34 @@
 ﻿using System;
 using System.IO;
+using VtfHeaderParserLib;
 
-namespace VtfHeaderParser
+/// <summary>
+/// Example program that parses VTFs from the command line.
+/// </summary>
+class Program
 {
-    class Program
+    private static void Main(string[] args)
     {
-        private static void Main(string[] args)
+        if (args.Length < 1)
         {
-            if (args.Length < 1)
+            Console.WriteLine("No arguments were given.");
+        }
+
+        foreach (var fileName in args)
+        {
+            try
             {
-                // TODO: Supply Usage message?
-                Console.WriteLine("No arguments were given.");
+                var vtfFile = new VtfFile(fileName);
             }
-            // TODO: Should each file be stored in its own unique variable? Perhaps a list.
-            foreach (var fileName in args)
+            catch (FileNotFoundException e)
             {
-                try
-                {
-                    var vtfFile = new VtfFile(fileName);
-                }
-                catch (FileNotFoundException e)
-                {
-                    Console.WriteLine($"The file was not found:\n{e.FileName}\n");
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    Console.WriteLine("The file is not a valid VTF file.\n");
-                }
+                Console.WriteLine($"The file was not found:\n{e.FileName}\n");
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                Console.WriteLine("The file is not a valid VTF file.\n");
             }
         }
     }
 }
+
