@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -63,12 +64,12 @@ namespace VtfHeaderParserLib
             _rawFlags = vtfFile.ReadUInt32();
             if (_rawFlags != 0)
             {
-                Console.WriteLine($"This VTF has the following flags: 0x{_rawFlags:x8}");
+                Debug.WriteLine($"This VTF has the following flags: 0x{_rawFlags:x8}");
                 foreach (uint currentFlag in Enum.GetValues(typeof(VtfFlags)))
                 {
                     if ((currentFlag & _rawFlags) == 0) continue;
                     
-                    Console.WriteLine($"- {(VtfFlags)currentFlag,-30} (0x{currentFlag:x8})");
+                    Debug.WriteLine($"- {(VtfFlags)currentFlag,-30} (0x{currentFlag:x8})");
                     
                     // Couldn't figure out how to do this in one line.
                     var castFlag = (VtfFlags)currentFlag;
@@ -77,7 +78,7 @@ namespace VtfHeaderParserLib
             }
             else
             {
-                Console.WriteLine("No Flags found.");
+                Debug.WriteLine("No Flags found.");
             }
         }
         
@@ -88,7 +89,7 @@ namespace VtfHeaderParserLib
                 _reflectivity[i] = vtfFile.ReadSingle();
             }
             
-            Console.WriteLine($"Reflectivity: {_reflectivity[0]} {_reflectivity[1]} {_reflectivity[2]}");
+            Debug.WriteLine($"Reflectivity: {_reflectivity[0]} {_reflectivity[1]} {_reflectivity[2]}");
         }
         
         private void ParseKeyValues(string keyValues)
@@ -110,14 +111,14 @@ namespace VtfHeaderParserLib
             {
                 if (parsingKey)
                 {
-                    Console.Write($"  - {currentEntry}: ");
+                    Debug.Write($"  - {currentEntry}: ");
                     entryKey = currentEntry;
                     parsingKey = false;
                     entryRepeat++;
                 }
                 else
                 {
-                    Console.WriteLine($"{currentEntry}");
+                    Debug.WriteLine($"{currentEntry}");
                     entryValue = currentEntry;
                     parsingKey = true;
                     entryRepeat++;
@@ -136,7 +137,7 @@ namespace VtfHeaderParserLib
             if (VersionMinor < 2) return;
             
             TextureDepth = vtfFile.ReadInt16();
-            Console.WriteLine($"Texture Depth: {TextureDepth}");
+            Debug.WriteLine($"Texture Depth: {TextureDepth}");
             
             if (VersionMinor < 3) return;
             
@@ -144,7 +145,7 @@ namespace VtfHeaderParserLib
             vtfFile.ReadBytes(3);
             
             _numberOfResources = vtfFile.ReadInt32();
-            Console.WriteLine($"Number of Resources: {_numberOfResources}");
+            Debug.WriteLine($"Number of Resources: {_numberOfResources}");
             
             // Skip 8 Bytes.
             vtfFile.ReadBytes(8);
@@ -157,7 +158,7 @@ namespace VtfHeaderParserLib
                 {
                     if (inputTag != key) continue;
                     
-                    Console.WriteLine($"- {value}");
+                    Debug.WriteLine($"- {value}");
                     _tags.Add(value);
                 }
 
@@ -169,7 +170,7 @@ namespace VtfHeaderParserLib
                 {
                     var lodU = vtfFile.ReadByte();
                     var lodV = vtfFile.ReadByte();
-                    Console.WriteLine($"  - Clamp U: {lodU}\n  - Clamp V: {lodV}");
+                    Debug.WriteLine($"  - Clamp U: {lodU}\n  - Clamp V: {lodV}");
                     
                     // Skip remainder bytes as the LOD values are in 2 bytes, not 4.
                     vtfFile.ReadBytes(2);
@@ -202,7 +203,7 @@ namespace VtfHeaderParserLib
         {
             using var vtfFile = new BinaryReader(File.Open(path,FileMode.Open));
             
-            Console.WriteLine($"Opening: {path}");
+            Debug.WriteLine($"Opening: {path}");
             
             const string headerSignature = "VTF\0";
             var inputSignature = Encoding.Default.GetString(vtfFile.ReadBytes(4));
@@ -211,22 +212,22 @@ namespace VtfHeaderParserLib
             {
                 VersionMajor = vtfFile.ReadInt32();
                 VersionMinor = vtfFile.ReadInt32();
-                Console.WriteLine($"VTF Version {VersionMajor}.{VersionMinor}");
+                Debug.WriteLine($"VTF Version {GUIFileVersion()}");
                 
                 _headerSize = vtfFile.ReadInt32();
-                Console.WriteLine($"Header Size: {_headerSize} Bytes");
+                Debug.WriteLine($"Header Size: {_headerSize} Bytes");
                 
                 LargestMipmapWidth = vtfFile.ReadInt16();
                 LargestMipmapHeight = vtfFile.ReadInt16();
-                Console.WriteLine($"Texture Dimensions: {LargestMipmapWidth} X {LargestMipmapHeight}");
+                Debug.WriteLine($"Texture Dimensions: {GUIDimensions()}");
                 
                 ParseFlags(vtfFile);
                 
                 AmountOfFrames = vtfFile.ReadInt16();
-                Console.WriteLine($"Amount of Frames: {AmountOfFrames}");
+                Debug.WriteLine($"Amount of Frames: {AmountOfFrames}");
                 
                 FirstFrame = vtfFile.ReadInt16();
-                Console.WriteLine($"First Frame: {FirstFrame}");
+                Debug.WriteLine($"First Frame: {FirstFrame}");
                 
                 // Skip padding of 4 bytes.
                 vtfFile.ReadBytes(4);
@@ -237,31 +238,35 @@ namespace VtfHeaderParserLib
                 vtfFile.ReadBytes(4);
                 
                 BumpmapScale = vtfFile.ReadSingle();
-                Console.WriteLine($"Bumpmap Scale: {BumpmapScale}");
+                Debug.WriteLine($"Bumpmap Scale: {BumpmapScale}");
                 
                 HighResolutionImageFormat = vtfFile.ReadInt32();
-                Console.WriteLine($"Texture Format: {(ImageFormats)HighResolutionImageFormat}");
+                Debug.WriteLine($"Texture Format: {GUIImageFormat()}");
                 
                 AmountOfMipmaps = vtfFile.ReadByte();
-                Console.WriteLine($"Amount of Mipmaps: {AmountOfMipmaps}");
+                Debug.WriteLine($"Amount of Mipmaps: {AmountOfMipmaps}");
                 
                 LowResolutionImageFormat = vtfFile.ReadUInt32();
-                Console.WriteLine($"Thumbnail Format: {(ImageFormats)LowResolutionImageFormat}");
+                Debug.WriteLine($"Thumbnail Format: {GUIThumbnailFormat()}");
                 
                 LowResolutionImageWidth = vtfFile.ReadByte();
                 LowResolutionImageHeight = vtfFile.ReadByte();
-                Console.WriteLine($"Thumbnail Dimensions: {LowResolutionImageWidth} X {LowResolutionImageHeight}");
+                Debug.WriteLine($"Thumbnail Dimensions: {LowResolutionImageWidth} X {LowResolutionImageHeight}");
                 
                 ParseDepthAndResources(vtfFile);
                 
-                Console.WriteLine("");
+                Debug.WriteLine("");
             }
             else
             {
                 throw new ArgumentOutOfRangeException(path, "File is not a valid VTF, File Signature did not match");
             }
         }
-        
+
+        //--------------
+        // Misc. Methods
+        //--------------
+
         /// <summary>
         /// Returns if the VTF is a compressed (DXT) Format.
         /// </summary>
@@ -283,7 +288,7 @@ namespace VtfHeaderParserLib
         
         public bool HasThumbnail()
         {
-            return (ImageFormats)LowResolutionImageFormat != ImageFormats.IMAGE_FORMAT_NONE;
+            return (ImageFormats)LowResolutionImageFormat != ImageFormats.NONE;
         }
         
         public bool HasFlags()
@@ -294,6 +299,55 @@ namespace VtfHeaderParserLib
         public bool HasKeyValues()
         {
             return KeyValuePairs.Any();
+        }
+
+        //----------------------------------------------------------
+        // String Methods mainly intended for GUI usage as a library
+        //----------------------------------------------------------
+
+        public string GUIFileVersion()
+        {
+            return VersionMajor + "." + VersionMinor;
+        }
+
+        public string GUIDimensions()
+        {
+            return LargestMipmapWidth + " X " + LargestMipmapHeight;
+        }
+        
+        public string GUIThumbnailDimensions()
+        {
+            return LowResolutionImageWidth + " X " + LowResolutionImageHeight;
+        }
+
+        public string GUIFrameAmount()
+        {
+            return IsAnimated() ? AmountOfFrames + " (Animated)" : AmountOfFrames + " (Not Animated)";
+        }
+
+        public string GUIReflectivity()
+        {
+            string reflectivityFormatted = null;
+            foreach (var item in Reflectivity)
+            {
+                reflectivityFormatted += item.ToString() + " ";
+            }
+            return reflectivityFormatted;
+        }
+
+        public string GUIReflectivity(int index)
+        {
+            return Reflectivity[index].ToString("N5");
+        }
+
+        public string GUIImageFormat()
+        {
+            return ((ImageFormats)HighResolutionImageFormat).ToString();
+        }
+
+        public string GUIThumbnailFormat()
+        {
+            return ((ImageFormats)LowResolutionImageFormat).ToString();
         }
     }
 }
